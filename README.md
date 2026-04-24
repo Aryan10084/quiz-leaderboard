@@ -1,54 +1,32 @@
 # Quiz Leaderboard System
-### SRM Internship Assignment | Bajaj Finserv Health | Java Qualifier
 
-This project is complete and ready for review. It polls the quiz API 10 times, removes duplicate events, calculates the final leaderboard, and submits it exactly once.
+SRM Internship Assignment for Bajaj Finserv Health.
 
-## What the interviewer sees first
+This project polls the quiz API 10 times, removes duplicate events, builds the final leaderboard, and submits it once.
 
-![Successful run output](Output/Output.png)
+## Screenshot first
 
-The screenshot shows the full verified run, including polling, deduplication, aggregation, submission, and final build success.
+![Run output](Output/Output.png)
 
-## One-line summary
+That screenshot is the main proof of the finished run. It shows the polls, the deduplication step, the leaderboard, the submit response, and the final build success.
 
-The app is a Spring Boot command-line program that solves the leaderboard problem end to end without requiring a web server.
+## What this project does
 
-## What is implemented
+The app is a Spring Boot command-line program. It does not start a web server. The flow is simple:
 
-The current implementation covers the full assignment flow:
+1. Poll the validator 10 times with a 5-second gap between calls.
+2. Remove repeated events using the pair `roundId + participant`.
+3. Add up scores for each participant.
+4. Sort the leaderboard in descending order.
+5. Submit the result once.
 
-1. Poll the validator 10 times with a 5-second delay between calls.
-2. Deduplicate events using `roundId + participant`.
-3. Sum scores per participant and sort descending.
-4. Submit the leaderboard once and log the response.
-
-## Architecture
-
-```text
-QuizLeaderboardApplication
-  |
-  v
-QuizOrchestrator
-  |
-  +--> QuizPollerService
-  |       GET /quiz/messages?regNo=X&poll=0..9
-  |
-  +--> EventDeduplicator
-  |       Remove duplicate roundId + participant pairs
-  |
-  +--> ScoreAggregator
-  |       Build sorted leaderboard
-  |
-  +--> SubmitService
-    POST /quiz/submit exactly once
-```
-
-## Project layout
+## Project structure
 
 ```text
 quiz-leaderboard/
 ├── pom.xml
-├── mvnw / mvnw.cmd
+├── mvnw
+├── mvnw.cmd
 ├── Output/Output.png
 ├── README.md
 └── src/main
@@ -60,58 +38,51 @@ quiz-leaderboard/
     └── resources/application.properties
 ```
 
-## How to verify without running anything
+## How the code is split
 
-If the interviewer only wants proof, the screenshot in `Output/Output.png` is the main evidence. It shows:
+- `QuizPollerService` handles the 10 API calls.
+- `EventDeduplicator` keeps only unique `roundId + participant` events.
+- `ScoreAggregator` builds the final sorted leaderboard.
+- `SubmitService` sends the leaderboard to the validator exactly once.
+- `QuizOrchestrator` connects the full flow.
 
-- all 10 polls completed
-- raw events collected
-- duplicates removed
-- final leaderboard produced
-- leaderboard submitted
-- build success at the end
+## How to run it locally
 
-## How to run locally
+Requirements:
 
-### Prerequisites
-
-- Java 17 or later
+- Java 17 or newer
+- Internet access
 - Windows, macOS, or Linux
-- Internet access for the quiz API
 
-Maven is already included through the wrapper, so no separate Maven installation is required.
+Maven is already included through the wrapper, so nothing extra needs to be installed.
 
-### 1. Open the project folder
-
-```powershell
-cd C:\Users\gamer\Downloads\quiz-leaderboard\quiz-leaderboard
-```
-
-### 2. Set your registration number
-
-The app reads the registration number from the environment variable `QUIZ_REG_NO`.
+Set your registration number:
 
 ```powershell
 set QUIZ_REG_NO=YOUR_REG_NO
 ```
 
-### 3. Run the application
-
-```powershell
-cmd /c "set QUIZ_REG_NO=YOUR_REG_NO && mvnw.cmd spring-boot:run"
-```
-
-### 4. Recommended run for a stable demo
-
-If the validator is slow or returns a temporary `503`, use a higher retry count:
+Run the app:
 
 ```powershell
 cmd /c "set QUIZ_REG_NO=YOUR_REG_NO && mvnw.cmd spring-boot:run -Dspring-boot.run.arguments=--quiz.max-retries-per-poll=15"
 ```
 
+I recommend the retry flag above because the validator can sometimes return a temporary `503`.
+
+To build and test:
+
+```powershell
+cmd /c mvnw.cmd test
+```
+
+```powershell
+cmd /c mvnw.cmd clean package -DskipTests
+```
+
 ## How to verify the output
 
-During a successful run, the interviewer should look for these lines:
+When the app runs correctly, you should see these kinds of lines in order:
 
 - `Quiz pipeline started`
 - `Polling started: regNo=...`
@@ -123,52 +94,24 @@ During a successful run, the interviewer should look for these lines:
 - `Result: SUBMITTED (validator summary mode)`
 - `Quiz pipeline finished`
 
-If these appear in order, the pipeline is working correctly.
+If those lines appear, the pipeline is working as expected.
 
-## Expected behavior
+## Notes on the validator
 
-- The app should finish in about 50 seconds because it waits 5 seconds between 10 polls.
-- The final leaderboard is sorted by total score in descending order.
-- The submit endpoint is called only once.
-- If the validator returns summary metadata instead of correctness fields, the app still treats the run as successful and logs the response clearly.
-
-## Build and test
-
-```powershell
-cmd /c mvnw.cmd test
-```
-
-To create a jar:
-
-```powershell
-cmd /c mvnw.cmd clean package -DskipTests
-```
+For some registrations, the validator returns a summary response instead of a correctness response. In that case, the app still treats the submission as successful and logs the returned metadata.
 
 ## Push to GitHub
 
-After updating the README and screenshot, push the repository with:
+The repository is already set up for GitHub. Use your remote URL and push like this:
 
 ```powershell
 git status
-git add README.md Output/Output.png src/main/java src/main/resources pom.xml mvnw mvnw.cmd .mvn
-git commit -m "Improve README and add verified output"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo>.git
+git add .
+git commit -m "Add interview-ready README"
 git push -u origin main
 ```
 
-If the remote already exists, skip the `git remote add origin` line.
-
-## Notes for the interviewer
-
-This codebase is intentionally structured so the main behavior is easy to inspect quickly:
-
-- `QuizPollerService` handles the API polling.
-- `EventDeduplicator` removes repeated events.
-- `ScoreAggregator` produces the final sorted leaderboard.
-- `SubmitService` sends the payload once and logs the validator response.
-
-The run in `Output/Output.png` is the proof of execution, so the project can be understood at a glance even before running it again.
+If you already pushed once, only `git add .`, `git commit`, and `git push` are needed for later updates.
 
 ## Author
 
