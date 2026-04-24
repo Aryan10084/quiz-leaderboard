@@ -100,19 +100,6 @@ If those lines appear, the pipeline is working as expected.
 
 For some registrations, the validator returns a summary response instead of a correctness response. In that case, the app still treats the submission as successful and logs the returned metadata.
 
-## Push to GitHub
-
-The repository is already set up for GitHub. Use your remote URL and push like this:
-
-```powershell
-git status
-git add .
-git commit -m "Add interview-ready README"
-git push -u origin main
-```
-
-If you already pushed once, only `git add .`, `git commit`, and `git push` are needed for later updates.
-
 ## Author
 
 SRM Institute of Science and Technology
